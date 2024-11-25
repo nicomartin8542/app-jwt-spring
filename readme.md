@@ -63,7 +63,7 @@ Ejecuta la aplicación con Java:
 ```bash
 java -jar target/{NOMBRE_DEL_JAR}.jar
 ```
-`Tambien peudes levantar la aplicacion desde el ide que estes usando, por ejemplo, Visual Studio Code.`
+`Tambien puedes levantar la aplicacion desde el ide que estes usando, por ejemplo, Visual Studio Code.`
 ### 5️⃣ Cargar los Roles Predefinidos
 Al iniciar la aplicación, los roles ROLE_ADMIN y ROLE_USER se insertarán automáticamente en la base de datos desde el archivo import.sql.
 
