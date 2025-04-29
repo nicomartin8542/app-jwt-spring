@@ -1,5 +1,7 @@
 package com.nico.curso.springboot.app.springboot_crud.security.filter;
 
+import static com.nico.curso.springboot.app.springboot_crud.security.TokenJwtConfig.*;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
@@ -16,16 +18,23 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nico.curso.springboot.app.springboot_crud.entities.User;
+import com.nico.curso.springboot.app.springboot_crud.constants.AppConstants;
+import com.nico.curso.springboot.app.springboot_crud.model.entities.User;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import static com.nico.curso.springboot.app.springboot_crud.security.TokenJwtConfig.*;
 
+/**
+ * Filtro encargado del proceso de autenticación (login)
+ * Se activa cuando se hace una petición POST al endpoint de login
+ * Extiende de UsernamePasswordAuthenticationFilter para manejar autenticación
+ * básica
+ */
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private AuthenticationManager authenticationManager;
@@ -34,6 +43,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         this.authenticationManager = authenticationManager;
     }
 
+    /**
+     * Método que procesa el intento de autenticación
+     * 1. Lee el cuerpo de la petición y lo convierte en un objeto User
+     * 2. Extrae username y password
+     * 3. Delega la autenticación al AuthenticationManager
+     */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException {
@@ -58,6 +73,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     }
 
+    /**
+     * Método ejecutado cuando la autenticación es exitosa
+     * 1. Extrae el username y roles del usuario autenticado
+     * 2. Genera un token JWT con esta información
+     * 3. Agrega el token en el header de la respuesta
+     * 4. Envía una respuesta JSON con el token y datos del usuario
+     */
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
             Authentication authResult) throws IOException, ServletException {
@@ -85,25 +107,40 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         body.put("token", token);
         body.put("message", "Token generado con exito");
 
+        // ... Establezco el token Cookies (HttpOnly)
+        Cookie cookie = new Cookie(AppConstants.COOKIE_NAME, token);
+        cookie.setHttpOnly(true); // Evita acceso por JS
+        cookie.setSecure(false); // Solo por HTTPS en producción
+        cookie.setPath("/"); // Disponible para toda la app
+        cookie.setMaxAge(60 * 60); // 1 hora (ajusta según tu necesidad)
+
+        response.addCookie(cookie);
         response.getWriter().write(new ObjectMapper().writeValueAsString(body));
         response.setContentType(CONTENT_TYPE);
         response.setStatus(200);
 
     }
 
+    /**
+     * Método ejecutado cuando la autenticación falla
+     * Envía una respuesta de error con código 401 (Unauthorized)
+     * Incluye un mensaje de error y los detalles del fallo
+     */
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException failed) throws IOException, ServletException {
 
         Map<String, String> body = new HashMap<>();
 
-        body.put("message", "Error en la autenticacion, username o password incorrectos!");
-        body.put("error", failed.getMessage());
+        if (failed.getMessage().equals("Bad credentials")) {
+            body.put("error", AppConstants.MSG_ERROR_BAD_CREDENTIALS);
+        } else {
+            body.put("error", failed.getMessage());
+        }
 
         response.getWriter().write(new ObjectMapper().writeValueAsString(body));
         response.setContentType(CONTENT_TYPE);
         response.setStatus(401);
 
     }
-
 }

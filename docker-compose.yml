@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mysql:
@@ -10,7 +10,7 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "3306:3306"
+      - "${DB_PORT}:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
@@ -20,12 +20,12 @@ services:
     image: phpmyadmin/phpmyadmin:latest
     container_name: phpmyadmin-container
     environment:
-      PMA_HOST: mysql-container  # El nombre del servicio MySQL
+      PMA_HOST: mysql-container # El nombre del servicio MySQL
       MYSQL_ROOT_PASSWORD: root123
     ports:
-      - "8080:80"  # Expone phpMyAdmin en el puerto 8080
+      - "8080:80" # Expone phpMyAdmin en el puerto 8080
     networks:
-      - mysql-network  
+      - mysql-network
 
 volumes:
   mysql-data:

@@ -34,3 +34,8 @@ build/
 
 # Ignorar archivo de producción
 # config-prod.properties
+
+#Ignorar archivos de entorno
+.env
+
+

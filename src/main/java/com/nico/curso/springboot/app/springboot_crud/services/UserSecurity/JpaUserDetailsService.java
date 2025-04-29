@@ -1,10 +1,12 @@
-package com.nico.curso.springboot.app.springboot_crud.services;
+package com.nico.curso.springboot.app.springboot_crud.services.UserSecurity;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,7 +15,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.nico.curso.springboot.app.springboot_crud.entities.User;
+import com.nico.curso.springboot.app.springboot_crud.constants.AppConstants;
+import com.nico.curso.springboot.app.springboot_crud.model.entities.User;
 import com.nico.curso.springboot.app.springboot_crud.repositories.UserRepository;
 
 @Service
@@ -29,7 +32,16 @@ public class JpaUserDetailsService implements UserDetailsService {
         Optional<User> userOptional = userRepository.findByUsername(username);
 
         if (userOptional.isEmpty()) {
-            throw new UsernameNotFoundException(String.format("Username %s not found", username));
+            throw new BadCredentialsException(AppConstants.MSG_ERROR_BAD_CREDENTIALS);
+        }
+
+        if (!userOptional.get().isConfirm()) {
+
+            throw new DisabledException(AppConstants.MSG_ERROR_USER_NOT_CONFIRMED);
+        }
+
+        if (!userOptional.get().isEnabled()) {
+            throw new DisabledException(AppConstants.MSG_ERROR_USER_DISABLED);
         }
 
         User user = userOptional.orElseThrow();
@@ -43,7 +55,7 @@ public class JpaUserDetailsService implements UserDetailsService {
 
                 user.getPassword(),
 
-                user.isEnabled(),
+                user.isEnabled() && user.isConfirm(),
 
                 true,
 

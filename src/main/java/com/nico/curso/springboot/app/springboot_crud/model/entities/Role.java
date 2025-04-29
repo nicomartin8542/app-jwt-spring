@@ -1,4 +1,4 @@
-package com.nico.curso.springboot.app.springboot_crud.entities;
+package com.nico.curso.springboot.app.springboot_crud.model.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

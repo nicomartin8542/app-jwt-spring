@@ -13,7 +13,7 @@ import jakarta.validation.Payload;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExistByUserName {
 
-    String message() default "no puede estar repetido!";
+    String message() default "El usuario ya existe!";
 
     Class<?>[] groups() default {};
 

@@ -13,7 +13,7 @@ import jakarta.validation.Payload;
 @Target(value = { ElementType.FIELD, ElementType.METHOD })
 public @interface IsRequired {
 
-    String message() default "Es requerido usando anotaciones";
+    String message() default "es requerido";
 
     Class<?>[] groups() default {};
 
